@@ -54,3 +54,27 @@ void set_pixel_f(canvas_t* canvas, float x, float y, float intensity) {
 
     #undef SET_PIXEL_SAFE
 }
+void draw_line_f(canvas_t* canvas, float x0, float y0, float x1, float y1, float thickness) {
+    float dx = x1 - x0;
+    float dy = y1 - y0;
+    float length = fmaxf(fabsf(dx), fabsf(dy));
+    
+    if (length == 0.0f) return;  // Avoid division by zero
+
+    float step_x = dx / length;
+    float step_y = dy / length;
+
+    for (float i = 0; i <= length; i++) {
+        float x = x0 + i * step_x;
+        float y = y0 + i * step_y;
+
+        // Draw square around the point for thickness
+        int half = (int)(thickness / 2);
+        for (int dx = -half; dx <= half; dx++) {
+            for (int dy = -half; dy <= half; dy++) {
+                set_pixel_f(canvas, x + dx, y + dy, 1.0f);  // Max brightness
+            }
+        }
+    }
+}
+
