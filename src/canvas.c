@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "canvas.h"
 #include <math.h>
+#include <stdio.h>
 
 // Create a canvas with the given width and height
 canvas_t* create_canvas(int width, int height) {
