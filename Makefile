@@ -1,27 +1,21 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -Iinclude
+CFLAGS = -Wall -O2 -Iinclude
 
-SRC = src/canvas.c
+SRC = src/canvas.c src/math3d.c src/renderer.c src/lighting.c
 OBJ = $(SRC:.c=.o)
+LIB = build/libtiny3d.a
 
-DEMO = demo/main
-DEMO_SRC = demo/main.c
-DEMO_OBJ = $(DEMO_SRC:.c=.o)
+all: $(LIB) demo/test_math
 
-BUILD_DIR = build
+$(LIB): $(OBJ)
+	mkdir -p build
+	ar rcs $(LIB) $(OBJ)
 
-all: $(BUILD_DIR)/libtiny3d.a $(DEMO)
+src/%.o: src/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-# Create static library
-$(BUILD_DIR)/libtiny3d.a: $(OBJ)
-	mkdir -p $(BUILD_DIR)
-	ar rcs $@ $^
-
-# Build demo
-$(DEMO): $(DEMO_SRC) $(BUILD_DIR)/libtiny3d.a
-	$(CC) $(CFLAGS) -o $@ $^ -lm
+demo/test_math: tests/test_math.c $(LIB)
+	$(CC) $(CFLAGS) $< -Lbuild -ltiny3d -lm -o $@
 
 clean:
-	rm -rf $(BUILD_DIR) demo/main *.o src/*.o
-
-.PHONY: all clean
+	rm -f src/*.o build/*.a demo/test_math
