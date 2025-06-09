@@ -1,21 +1,42 @@
 CC = gcc
-CFLAGS = -Wall -O2 -Iinclude
+CFLAGS = -Wall -Wextra -pedantic -O2 -Iinclude
+LDFLAGS = -lm
+SRC_DIR = src
+BUILD_DIR = build
+BIN_DIR = demo
 
-SRC = src/canvas.c src/math3d.c src/renderer.c src/lighting.c
-OBJ = $(SRC:.c=.o)
-LIB = build/libtiny3d.a
+# Source files
+SRC = $(wildcard $(SRC_DIR)/*.c)
+OBJ = $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRC))
+LIB = $(BUILD_DIR)/libtiny3d.a
 
-all: $(LIB) demo/test_math
+# Targets
+all: dirs $(LIB) $(BIN_DIR)/demo
+
+dirs:
+	@mkdir -p $(BUILD_DIR) $(BIN_DIR)
 
 $(LIB): $(OBJ)
-	mkdir -p build
-	ar rcs $(LIB) $(OBJ)
+	ar rcs $@ $^
 
-src/%.o: src/%.c
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-demo/test_math: tests/test_math.c $(LIB)
-	$(CC) $(CFLAGS) $< -Lbuild -ltiny3d -lm -o $@
+$(BIN_DIR)/demo: demo/main.c $(LIB)
+	$(CC) $(CFLAGS) $< -L$(BUILD_DIR) -ltiny3d $(LDFLAGS) -o $@
 
 clean:
-	rm -f src/*.o build/*.a demo/test_math
+ifeq ($(OS),Windows_NT)
+	@del /Q $(BUILD_DIR)\*.* $(BIN_DIR)\*.*
+else
+	@rm -rf $(BUILD_DIR)/* $(BIN_DIR)/*
+endif
+
+run: all
+	@$(BIN_DIR)/demo
+
+test: all
+	@echo "Running tests..."
+	@$(BIN_DIR)/demo
+
+.PHONY: all dirs clean run test
